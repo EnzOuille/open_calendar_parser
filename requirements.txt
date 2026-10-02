@@ -1,0 +1,4 @@
+requests
+beautifulsoup4
+pdfplumber
+tzdata; sys_platform == "win32"
