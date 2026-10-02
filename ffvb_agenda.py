@@ -466,13 +466,19 @@ def _ics_esc(s: str) -> str:
 
 def ecrire_ics(matchs: list[Match], page_url: str) -> None:
     fmt = "%Y%m%dT%H%M%SZ"
-    now = datetime.now(timezone.utc).strftime(fmt)
+    maintenant = datetime.now(timezone.utc)
+    now = maintenant.strftime(fmt)
+    # Réimport dans le même agenda : même UID = mise à jour ; une SEQUENCE croissante
+    # (secondes depuis 2026) signale que cette version remplace la précédente.
+    sequence = int((maintenant - datetime(2026, 1, 1, tzinfo=timezone.utc)).total_seconds())
     lignes = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//perso//ffvb-agenda//FR"]
     for m in matchs:
         lignes += [
             "BEGIN:VEVENT",
             f"UID:{m.uid}",
             f"DTSTAMP:{now}",
+            f"LAST-MODIFIED:{now}",
+            f"SEQUENCE:{sequence}",
             f"DTSTART:{m.debut.astimezone(timezone.utc).strftime(fmt)}",
             f"DTEND:{(m.debut + DUREE).astimezone(timezone.utc).strftime(fmt)}",
             f"SUMMARY:{_ics_esc(titre(m))}",
